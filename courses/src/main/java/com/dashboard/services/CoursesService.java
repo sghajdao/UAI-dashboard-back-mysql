@@ -10,16 +10,20 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.dashboard.dto.CoursesResponse;
 import com.dashboard.entities.Canvas__courses;
 import com.dashboard.entities.Canvas__enrollments;
 import com.dashboard.entities.Canvas__scores;
+import com.dashboard.repositories.AssignmentsRepository;
 import com.dashboard.repositories.CoursesRepository;
 import com.dashboard.repositories.EnrollmentsRepository;
 import com.dashboard.repositories.ScoresRepository;
+import com.dashboard.repositories.Web_conferencesRepository;
 
 @Service
 public class CoursesService {
@@ -29,6 +33,12 @@ public class CoursesService {
     private EnrollmentsRepository enrollmentsRepository;
     @Autowired
     private ScoresRepository scoresRepository;
+    @Autowired
+    private Web_conferencesRepository web_conferencesRepository;
+    @Autowired
+    private AssignmentsRepository assignmentsRepository;
+
+    private List<CoursesResponse> cachedResponse;
 
     @Async
     public CompletableFuture<List<CoursesResponse>> getResponse() {
@@ -106,12 +116,30 @@ public class CoursesService {
         if (course.getSettings() != null) {
             String discussions = course.getSettings().split(",")[0];
             String files = course.getSettings().split(",")[course.getSettings().split(",").length - 1];
-            if (discussions.contains("allow_student_discussion_editing") && discussions.contains("true"))
+            if (discussions.contains("allow_student_discussion_editing") && discussions.contains("true")) {
                 features.add("discussion");
+            }
             if (files.contains("allow_student_forum_attachments") && files.contains("true")) {
                 features.add("files");
             }
         }
+        if (web_conferencesRepository.countByContextId(course.getId(), Date.from(Instant.parse("2024-01-01T00:00:00Z"))) != 0)
+            features.add("conferences");
+        if (assignmentsRepository.countByContextId(course.getId(), Date.from(Instant.parse("2024-01-01T00:00:00Z"))) != 0)
+            features.add("assignments");
         return features;
+    }
+
+    @Cacheable(value = "coursesResponseCache")
+    public List<CoursesResponse> getCachedResponse() {
+        System.out.println("REQUEST!!");
+        return cachedResponse;
+    }
+
+    @Scheduled(fixedRate = 24 * 60 * 60 * 1000)
+    public void refreshResponse() {
+        System.out.println("START");
+        cachedResponse = getResponse().join();
+        System.out.println("END");
     }
 }

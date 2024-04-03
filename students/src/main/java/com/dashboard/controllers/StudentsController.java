@@ -20,7 +20,9 @@ public class StudentsController {
 
     @GetMapping({ "/", "" })
     private CompletableFuture<ResponseEntity<List<StudentsResponse>>> getStudentsResponse() {
-        return studentsService.getResponse().thenApply(
-                response -> new ResponseEntity<>(response, HttpStatus.OK));
+        List<StudentsResponse> cachedResponse = studentsService.getCachedResponse();
+        return CompletableFuture.completedFuture(new ResponseEntity<>(cachedResponse, HttpStatus.OK));
+        // return studentsService.getResponse().thenApply(
+        //         response -> new ResponseEntity<>(response, HttpStatus.OK));
     }
 }

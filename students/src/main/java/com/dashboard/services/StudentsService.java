@@ -10,7 +10,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.dashboard.dto.StudentsResponse;
@@ -33,6 +35,8 @@ public class StudentsService {
     private ScoresRepository scoresRepository;
     @Autowired
     private SubmissionsRepository submissionsRepository;
+
+    private List<StudentsResponse> cachedResponse;
 
     public List<Canvas__enrollments> getEnrolledStudents() {
         return enrollmentsRepository.getAllEnrollments(Date.from(Instant.parse("2024-01-01T00:00:00Z"))).stream()
@@ -157,5 +161,18 @@ public class StudentsService {
             student.setExecused_submissions(excused);
         });
         return response;
+    }
+
+    @Cacheable(value = "coursesResponseCache")
+    public List<StudentsResponse> getCachedResponse() {
+        System.out.println("REQUEST!!");
+        return cachedResponse;
+    }
+
+    @Scheduled(fixedRate = 24 * 60 * 60 * 1000)
+    public void refreshResponse() {
+        System.out.println("START");
+        cachedResponse = getResponse().join();
+        System.out.println("END");
     }
 }
