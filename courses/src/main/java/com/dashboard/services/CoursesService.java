@@ -20,10 +20,12 @@ import com.dashboard.entities.Canvas__courses;
 import com.dashboard.entities.Canvas__enrollments;
 import com.dashboard.entities.Canvas__scores;
 import com.dashboard.repositories.AssignmentsRepository;
+import com.dashboard.repositories.Context_modulesResponse;
 import com.dashboard.repositories.CoursesRepository;
 import com.dashboard.repositories.EnrollmentsRepository;
 import com.dashboard.repositories.ScoresRepository;
 import com.dashboard.repositories.Web_conferencesRepository;
+import com.dashboard.repositories.Wiki_pagesRepository;
 
 @Service
 public class CoursesService {
@@ -37,6 +39,10 @@ public class CoursesService {
     private Web_conferencesRepository web_conferencesRepository;
     @Autowired
     private AssignmentsRepository assignmentsRepository;
+    @Autowired
+    private Wiki_pagesRepository wiki_pagesRepository;
+    @Autowired
+    private Context_modulesResponse context_modulesResponse;
 
     private List<CoursesResponse> cachedResponse;
 
@@ -71,6 +77,7 @@ public class CoursesService {
             double enrollmentAvg = 0;
             int studentsWithGrade = 0;
             int inactiveStudents = 0;
+            List<Double> studentsScorses = new ArrayList<>();
             for (Canvas__enrollments enrollment : courseEnrollments) {
                 if (enrollment.getLast_activity_at() != null
                         && System.currentTimeMillis() - enrollment.getLast_activity_at().getTime() >= 86400000 * 7)
@@ -88,13 +95,15 @@ public class CoursesService {
                 if (count != 0) {
                     studentsWithGrade++;
                     enrollmentAvg += current_scores / count;
+                    studentsScorses.add(current_scores / count);
                 }
             }
             if (courseEnrollments.size() != 0)
-                response.setAverage(enrollmentAvg / courseEnrollments.size());
+                response.setAverage(enrollmentAvg / studentsWithGrade);
             response.setStudents_with_garde(studentsWithGrade);
             response.setAll_students(courseEnrollments.size());
             response.setInactive_students(inactiveStudents);
+            response.setScores(studentsScorses);
             if (courseEnrollments.size() != 0)
                 responses.add(response);
         }
@@ -127,6 +136,10 @@ public class CoursesService {
             features.add("conferences");
         if (assignmentsRepository.countByContextId(course.getId(), Date.from(Instant.parse("2024-01-01T00:00:00Z"))) != 0)
             features.add("assignments");
+        if (wiki_pagesRepository.countByContextId(course.getId(), Date.from(Instant.parse("2024-01-01T00:00:00Z"))) != 0)
+            features.add("pages");
+        if (context_modulesResponse.countByContextId(course.getId(), Date.from(Instant.parse("2024-01-01T00:00:00Z"))) != 0)
+            features.add("modules");
         return features;
     }
 
