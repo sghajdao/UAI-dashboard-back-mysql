@@ -1,9 +1,7 @@
 package com.dashboard.services;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -14,57 +12,29 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import com.dashboard.dto.StudentsData;
 import com.dashboard.dto.StudentsResponse;
 import com.dashboard.entities.Canvas__enrollments;
 import com.dashboard.entities.Canvas__scores;
 import com.dashboard.entities.Canvas__submissions;
-import com.dashboard.entities.Canvas__users;
-import com.dashboard.repositories.EnrollmentsRepository;
-import com.dashboard.repositories.ScoresRepository;
-import com.dashboard.repositories.SubmissionsRepository;
-import com.dashboard.repositories.UsersRepository;
 
 @Service
 public class StudentsService {
     @Autowired
-    private UsersRepository usersRepository;
-    @Autowired
-    private EnrollmentsRepository enrollmentsRepository;
-    @Autowired
-    private ScoresRepository scoresRepository;
-    @Autowired
-    private SubmissionsRepository submissionsRepository;
+    private RestTemplate restTemplate;
 
     private List<StudentsResponse> cachedResponse;
 
-    public List<Canvas__enrollments> getEnrolledStudents() {
-        return enrollmentsRepository.getAllEnrollments(Date.from(Instant.parse("2024-01-01T00:00:00Z"))).stream()
-                .filter(enrollment -> enrollment.getType().startsWith("StudentEnrollment"))
-                .collect(Collectors.toList());
-    }
-
     @Async
     public CompletableFuture<List<StudentsResponse>> getResponse() {
-        List<Canvas__users> students = usersRepository.getAllStudents(Date.from(Instant.parse("2023-01-01T00:00:00Z")));
-        List<Canvas__enrollments> enrollments = getEnrolledStudents();
-        List<Canvas__scores> scores = scoresRepository
-                .findScoresWithNonNullCurrentScore(Date.from(Instant.parse("2024-01-01T00:00:00Z")));
-        List<Canvas__submissions> submissions = submissionsRepository
-                .getAllSubmissions(Date.from(Instant.parse("2024-01-01T00:00:00Z")));
+        StudentsData studentsData = restTemplate.getForObject("http://localhost:9292/api/fetcher/students",
+                StudentsData.class);
 
-        Map<Long, List<Canvas__enrollments>> enrollmentsMap = enrollments.stream()
-                .collect(Collectors.groupingBy(Canvas__enrollments::getUser_id));
-
-        Map<Long, List<Canvas__submissions>> submissionsMap = submissions.stream()
-                .collect(Collectors.groupingBy(Canvas__submissions::getUser_id));
-
-        Map<Long, List<Canvas__scores>> scoresMap = scores.stream()
-                .collect(Collectors.groupingBy(Canvas__scores::getEnrollment_id));
-
-        List<StudentsResponse> response = students.parallelStream()
+        List<StudentsResponse> response = studentsData.getStudents().parallelStream()
                 .map(student -> {
-                    List<Canvas__enrollments> studentEnrollments = enrollmentsMap.getOrDefault(student.getId(),
+                    List<Canvas__enrollments> studentEnrollments = studentsData.getEnrollmentsMap().getOrDefault(student.getId(),
                             Collections.emptyList());
                     List<Double> coursesScores = new ArrayList<>();
                     double enrollmentAvg = 0;
@@ -73,7 +43,7 @@ public class StudentsService {
 
                     for (Canvas__enrollments enrollment : studentEnrollments) {
 
-                        List<Canvas__scores> studentScores = scoresMap.getOrDefault(enrollment.getId(),
+                        List<Canvas__scores> studentScores = studentsData.getScoresMap().getOrDefault(enrollment.getId(),
                                 Collections.emptyList());
                         double current_scores = 0;
                         int count = 0;
@@ -106,7 +76,7 @@ public class StudentsService {
                             coursesScores.isEmpty() ? 0
                                     : enrollmentAvg / coursesScores.size();
 
-                    enrollmentsMap.remove(student.getId());
+                                    studentsData.getEnrollmentsMap().remove(student.getId());
 
                     if (studentEnrollments.size() == 0)
                         return null;
@@ -125,7 +95,7 @@ public class StudentsService {
                 .filter(responses -> responses != null)
                 .collect(Collectors.toList());
 
-        response = updateSubmissions(response, submissionsMap);
+        response = updateSubmissions(response, studentsData.getSubmissionsMap());
         return CompletableFuture.completedFuture(response);
     }
 

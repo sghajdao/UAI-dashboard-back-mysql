@@ -1,0 +1,24 @@
+server:
+    port: 9292
+spring:
+    main:
+        allow-bean-definition-overriding: true
+    datasource:
+        url: jdbc:mysql://localhost:3306/mysql
+        username: root
+        password: S@ad03012000
+        driver-class-name: com.mysql.jdbc.Driver
+    jpa:
+        hibernate:
+            ddl-auto: none
+        # show-sql: true
+        properties:
+            hibernate:
+                format_sql: true
+        database: mysql
+        database-platform: org.hibernate.dialect.MySQL8Dialect
+    profiles:
+        active: dev
+    mvc:
+        async:
+          request-timeout: -1

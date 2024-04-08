@@ -1,67 +1,42 @@
 package com.dashboard.services;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import com.dashboard.dto.CoursesData;
 import com.dashboard.dto.CoursesResponse;
+import com.dashboard.entities.Canvas__assignments;
+import com.dashboard.entities.Canvas__context_modules;
 import com.dashboard.entities.Canvas__courses;
 import com.dashboard.entities.Canvas__enrollments;
 import com.dashboard.entities.Canvas__scores;
-import com.dashboard.repositories.AssignmentsRepository;
-import com.dashboard.repositories.Context_modulesResponse;
-import com.dashboard.repositories.CoursesRepository;
-import com.dashboard.repositories.EnrollmentsRepository;
-import com.dashboard.repositories.ScoresRepository;
-import com.dashboard.repositories.Web_conferencesRepository;
-import com.dashboard.repositories.Wiki_pagesRepository;
+import com.dashboard.entities.Canvas__web_conferences;
+import com.dashboard.entities.Canvas__wiki_pages;
 
 @Service
 public class CoursesService {
     @Autowired
-    private CoursesRepository coursesRepository;
-    @Autowired
-    private EnrollmentsRepository enrollmentsRepository;
-    @Autowired
-    private ScoresRepository scoresRepository;
-    @Autowired
-    private Web_conferencesRepository web_conferencesRepository;
-    @Autowired
-    private AssignmentsRepository assignmentsRepository;
-    @Autowired
-    private Wiki_pagesRepository wiki_pagesRepository;
-    @Autowired
-    private Context_modulesResponse context_modulesResponse;
+    private RestTemplate restTemplate;
 
     private List<CoursesResponse> cachedResponse;
 
     @Async
     public CompletableFuture<List<CoursesResponse>> getResponse() {
+        CoursesData coursesData = restTemplate.getForObject("http://localhost:9292/api/fetcher/courses",
+                CoursesData.class);
+                
         List<CoursesResponse> responses = new ArrayList<>();
-        List<Canvas__courses> courses = coursesRepository.findAll();
-        List<Canvas__enrollments> enrollments = enrollmentsRepository
-                .getAllEnrollments(Date.from(Instant.parse("2024-01-01T00:00:00Z")));
-        List<Canvas__scores> scores = scoresRepository
-                .findScoresWithNonNullCurrentScore(Date.from(Instant.parse("2024-01-01T00:00:00Z")));
 
-        Map<Long, List<Canvas__enrollments>> enrollmentsMap = enrollments.stream()
-                .collect(Collectors.groupingBy(Canvas__enrollments::getCourse_id));
-
-        Map<Long, List<Canvas__scores>> scoresMap = scores.stream()
-                .collect(Collectors.groupingBy(Canvas__scores::getEnrollment_id));
-
-        for (Canvas__courses course : courses) {
+        for (Canvas__courses course : coursesData.getCourses()) {
             CoursesResponse response = new CoursesResponse();
             response.setId(course.getId());
             response.setName(course.getName());
@@ -70,9 +45,9 @@ public class CoursesService {
                 response.setStatus("pulished");
             else if (course.getConclude_at() != null)
                 response.setStatus("concluded");
-            response.setFeaturse(new ArrayList<>(getFeatures(course)));
+            response.setFeaturse(new ArrayList<>(getFeatures(course, coursesData)));
 
-            List<Canvas__enrollments> courseEnrollments = enrollmentsMap.getOrDefault(course.getId(),
+            List<Canvas__enrollments> courseEnrollments = coursesData.getEnrollmentsMap().getOrDefault(course.getId(),
                     Collections.emptyList());
             double enrollmentAvg = 0;
             int studentsWithGrade = 0;
@@ -82,7 +57,7 @@ public class CoursesService {
                 if (enrollment.getLast_activity_at() != null
                         && System.currentTimeMillis() - enrollment.getLast_activity_at().getTime() >= 86400000 * 7)
                     inactiveStudents++;
-                List<Canvas__scores> courseScores = scoresMap.getOrDefault(enrollment.getId(),
+                List<Canvas__scores> courseScores = coursesData.getScoresMap().getOrDefault(enrollment.getId(),
                         Collections.emptyList());
                 double current_scores = 0;
                 int count = 0;
@@ -110,7 +85,7 @@ public class CoursesService {
         return CompletableFuture.completedFuture(responses);
     }
 
-    List<String> getFeatures(Canvas__courses course) {
+    List<String> getFeatures(Canvas__courses course, CoursesData coursesData) {
         List<String> features = new ArrayList<>();
         if (course.getGrading_standard_id() != null)
             features.add("grades");
@@ -132,14 +107,38 @@ public class CoursesService {
                 features.add("files");
             }
         }
-        if (web_conferencesRepository.countByContextId(course.getId(), Date.from(Instant.parse("2024-01-01T00:00:00Z"))) != 0)
-            features.add("conferences");
-        if (assignmentsRepository.countByContextId(course.getId(), Date.from(Instant.parse("2024-01-01T00:00:00Z"))) != 0)
-            features.add("assignments");
-        if (wiki_pagesRepository.countByContextId(course.getId(), Date.from(Instant.parse("2024-01-01T00:00:00Z"))) != 0)
-            features.add("pages");
-        if (context_modulesResponse.countByContextId(course.getId(), Date.from(Instant.parse("2024-01-01T00:00:00Z"))) != 0)
-            features.add("modules");
+        for (Canvas__assignments assignments: coursesData.getAssignments()) {
+            if (assignments.getContext_id().equals(course.getId())) {
+                features.add("assignments");
+                break;
+            }
+        }
+        for (Canvas__context_modules module: coursesData.getModules()) {
+            if (module.getContext_id().equals(course.getId())) {
+                features.add("modules");
+                break;
+            }
+        }
+        for (Canvas__web_conferences conference: coursesData.getConferences()) {
+            if (conference.getContext_id().equals(course.getId())) {
+                features.add("conferences");
+                break;
+            }
+        }
+        for (Canvas__wiki_pages page: coursesData.getPages()) {
+            if (page.getContext_id().equals(course.getId())) {
+                features.add("pages");
+                break;
+            }
+        }
+        // if (web_conferencesRepository.countByContextId(course.getId()))
+        //     features.add("conferences");
+        // if (assignmentsRepository.countByContextId(course.getId()))
+        //     features.add("assignments");
+        // if (wiki_pagesRepository.countByContextId(course.getId()))
+        //     features.add("pages");
+        // if (context_modulesResponse.countByContextId(course.getId()))
+        //     features.add("modules");
         return features;
     }
 
