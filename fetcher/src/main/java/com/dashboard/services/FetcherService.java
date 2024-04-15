@@ -78,7 +78,8 @@ public class FetcherService {
                 List<Canvas__context_modules> modules = new ArrayList<>(context_modulesRepository.getAllModules(Date.from(Instant.parse("2024-01-01T00:00:00Z"))));
                 List<Canvas__web_conferences> conferences = new ArrayList<>(web_conferencesRepository.getAllConfernces(Date.from(Instant.parse("2024-01-01T00:00:00Z"))));
                 List<Canvas__wiki_pages> pages = new ArrayList<>(wiki_pagesRepository.getAllPages(Date.from(Instant.parse("2024-01-01T00:00:00Z"))));
-                return new DatabaseTables(students, courses, enrollments, scores, submissions, assignments, modules, conferences, pages);
+                int count = coursesRepository.countCourses(Date.from(Instant.parse("2024-01-01T00:00:00Z")));
+                return new DatabaseTables(students, courses, enrollments, scores, submissions, assignments, modules, conferences, pages, count);
         }
 
         @Async
@@ -117,7 +118,8 @@ public class FetcherService {
                 Map<Long, List<Canvas__scores>> scoresMap = scores.stream()
                                 .collect(Collectors.groupingBy(Canvas__scores::getEnrollment_id));
 
-                CoursesData data = new CoursesData(courses, enrollmentsMap, scoresMap, scores, assignments, modules, conferences, pages);
+                int count = getDatabaseTables().getCoursesNumber();
+                CoursesData data = new CoursesData(courses, enrollmentsMap, scoresMap, scores, assignments, modules, conferences, pages, count);
                 return CompletableFuture.completedFuture(data);
         }
 

@@ -22,4 +22,5 @@ public class CoursesResponse {
     private Integer inactive_students; // inactive students last 7 days
     private List<String> featurse;
     private List<Double> scores;
+    private Integer coursesNumber;
 }

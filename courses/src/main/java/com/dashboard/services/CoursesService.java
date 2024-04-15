@@ -38,6 +38,7 @@ public class CoursesService {
 
         for (Canvas__courses course : coursesData.getCourses()) {
             CoursesResponse response = new CoursesResponse();
+            response.setCoursesNumber(coursesData.getCoursesNumber());
             response.setId(course.getId());
             response.setName(course.getName());
             if (course.getIs_public() != null && course.getIs_public() &&
@@ -74,7 +75,7 @@ public class CoursesService {
                 }
             }
             if (courseEnrollments.size() != 0)
-                response.setAverage(enrollmentAvg / studentsWithGrade);
+                response.setAverage(studentsWithGrade != 0? enrollmentAvg / studentsWithGrade : null);
             response.setStudents_with_garde(studentsWithGrade);
             response.setAll_students(courseEnrollments.size());
             response.setInactive_students(inactiveStudents);
@@ -131,14 +132,6 @@ public class CoursesService {
                 break;
             }
         }
-        // if (web_conferencesRepository.countByContextId(course.getId()))
-        //     features.add("conferences");
-        // if (assignmentsRepository.countByContextId(course.getId()))
-        //     features.add("assignments");
-        // if (wiki_pagesRepository.countByContextId(course.getId()))
-        //     features.add("pages");
-        // if (context_modulesResponse.countByContextId(course.getId()))
-        //     features.add("modules");
         return features;
     }
 

@@ -27,4 +27,5 @@ public class CoursesData {
     private List<Canvas__context_modules> modules;
     private List<Canvas__web_conferences> conferences;
     private List<Canvas__wiki_pages> pages;
+    private Integer coursesNumber;
 }
