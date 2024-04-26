@@ -41,6 +41,7 @@ public class CoursesService {
             response.setCoursesNumber(coursesData.getCoursesNumber());
             response.setId(course.getId());
             response.setName(course.getName());
+            response.setCreated_at(course.getCreated_at());
             if (course.getIs_public() != null && course.getIs_public() &&
                     course.getConclude_at() == null)
                 response.setStatus("pulished");

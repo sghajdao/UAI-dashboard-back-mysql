@@ -60,25 +60,34 @@ public class FetcherService {
         private DatabaseTables databaseTables;
 
         public List<Canvas__enrollments> getEnrolledStudents() {
-                return enrollmentsRepository.getAllEnrollments(Date.from(Instant.parse("2024-01-01T00:00:00Z")))
+                return enrollmentsRepository.getAllEnrollments(Date.from(Instant.parse("2023-03-01T00:00:00Z")))
                                 .stream()
                                 .filter(enrollment -> enrollment.getType().startsWith("StudentEnrollment"))
                                 .collect(Collectors.toList());
         }
 
         private DatabaseTables getDatabase() {
-                List<Canvas__users> students = usersRepository.getAllStudents(Date.from(Instant.parse("2023-01-01T00:00:00Z")));
+                List<Canvas__users> students = usersRepository.getAllStudents(Date.from(Instant.parse("2023-03-01T00:00:00Z")));
+                System.out.println("USERS");
                 List<Canvas__enrollments> enrollments = getEnrolledStudents();
+                System.out.println("ENROLLMENTS");
                 List<Canvas__scores> scores = scoresRepository
-                                .findScoresWithNonNullCurrentScore(Date.from(Instant.parse("2024-01-01T00:00:00Z")));
+                                .findScoresWithNonNullCurrentScore(Date.from(Instant.parse("2023-03-01T00:00:00Z")));
+                                System.out.println("SCORES");
                 List<Canvas__submissions> submissions = submissionsRepository
-                                .getAllSubmissions(Date.from(Instant.parse("2024-01-01T00:00:00Z")));
-                List<Canvas__courses> courses = coursesRepository.getAllCourses(Date.from(Instant.parse("2024-01-01T00:00:00Z")));
-                List<Canvas__assignments> assignments = new ArrayList<>(assignmentsRepository.getAllAssignments(Date.from(Instant.parse("2024-01-01T00:00:00Z"))));
-                List<Canvas__context_modules> modules = new ArrayList<>(context_modulesRepository.getAllModules(Date.from(Instant.parse("2024-01-01T00:00:00Z"))));
-                List<Canvas__web_conferences> conferences = new ArrayList<>(web_conferencesRepository.getAllConfernces(Date.from(Instant.parse("2024-01-01T00:00:00Z"))));
-                List<Canvas__wiki_pages> pages = new ArrayList<>(wiki_pagesRepository.getAllPages(Date.from(Instant.parse("2024-01-01T00:00:00Z"))));
-                int count = coursesRepository.countCourses(Date.from(Instant.parse("2024-01-01T00:00:00Z")));
+                                .getAllSubmissions(Date.from(Instant.parse("2023-03-01T00:00:00Z")));
+                                System.out.println("SUBMISSIONS");
+                List<Canvas__courses> courses = coursesRepository.getAllCourses(Date.from(Instant.parse("2023-03-01T00:00:00Z")));
+                System.out.println("COURSES");
+                List<Canvas__assignments> assignments = new ArrayList<>(assignmentsRepository.getAllAssignments(Date.from(Instant.parse("2023-03-01T00:00:00Z"))));
+                System.out.println("ASSIGNMENTS");
+                List<Canvas__context_modules> modules = new ArrayList<>(context_modulesRepository.getAllModules(Date.from(Instant.parse("2023-03-01T00:00:00Z"))));
+                System.out.println("CONTEXT_MODULES");
+                List<Canvas__web_conferences> conferences = new ArrayList<>(web_conferencesRepository.getAllConfernces(Date.from(Instant.parse("2023-03-01T00:00:00Z"))));
+                System.out.println("WEB_CONF");
+                List<Canvas__wiki_pages> pages = new ArrayList<>(wiki_pagesRepository.getAllPages(Date.from(Instant.parse("2023-03-01T00:00:00Z"))));
+                System.out.println("WIKI_PAGES");
+                int count = coursesRepository.countCourses(Date.from(Instant.parse("2023-03-01T00:00:00Z")));
                 return new DatabaseTables(students, courses, enrollments, scores, submissions, assignments, modules, conferences, pages, count);
         }
 

@@ -1,5 +1,6 @@
 package com.dashboard.dto;
 
+import java.util.Date;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -13,6 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CoursesResponse {
     private Long id;
+    private Date created_at;
     private String name;
     private String teacher;
     private String status;
