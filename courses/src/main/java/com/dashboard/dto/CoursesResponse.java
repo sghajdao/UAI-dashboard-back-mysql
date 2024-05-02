@@ -16,7 +16,7 @@ public class CoursesResponse {
     private Long id;
     private Date created_at;
     private String name;
-    private String teacher;
+    private List<String> teachers;
     private String status;
     private Double average;
     private Integer students_with_garde;

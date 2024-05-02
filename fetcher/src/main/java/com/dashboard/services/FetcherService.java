@@ -62,31 +62,25 @@ public class FetcherService {
         public List<Canvas__enrollments> getEnrolledStudents() {
                 return enrollmentsRepository.getAllEnrollments(Date.from(Instant.parse("2023-03-01T00:00:00Z")))
                                 .stream()
-                                .filter(enrollment -> enrollment.getType().startsWith("StudentEnrollment"))
+                                .filter(enrollment -> enrollment.getType().startsWith("StudentEnrollment")
+                                                || enrollment.getType().startsWith("TeacherEnrollment"))
                                 .collect(Collectors.toList());
         }
 
         private DatabaseTables getDatabase() {
                 List<Canvas__users> students = usersRepository.getAllStudents(Date.from(Instant.parse("2023-03-01T00:00:00Z")));
-                System.out.println("USERS");
                 List<Canvas__enrollments> enrollments = getEnrolledStudents();
-                System.out.println("ENROLLMENTS");
                 List<Canvas__scores> scores = scoresRepository
                                 .findScoresWithNonNullCurrentScore(Date.from(Instant.parse("2023-03-01T00:00:00Z")));
-                                System.out.println("SCORES");
+        
                 List<Canvas__submissions> submissions = submissionsRepository
                                 .getAllSubmissions(Date.from(Instant.parse("2023-03-01T00:00:00Z")));
-                                System.out.println("SUBMISSIONS");
+        
                 List<Canvas__courses> courses = coursesRepository.getAllCourses(Date.from(Instant.parse("2023-03-01T00:00:00Z")));
-                System.out.println("COURSES");
                 List<Canvas__assignments> assignments = new ArrayList<>(assignmentsRepository.getAllAssignments(Date.from(Instant.parse("2023-03-01T00:00:00Z"))));
-                System.out.println("ASSIGNMENTS");
                 List<Canvas__context_modules> modules = new ArrayList<>(context_modulesRepository.getAllModules(Date.from(Instant.parse("2023-03-01T00:00:00Z"))));
-                System.out.println("CONTEXT_MODULES");
                 List<Canvas__web_conferences> conferences = new ArrayList<>(web_conferencesRepository.getAllConfernces(Date.from(Instant.parse("2023-03-01T00:00:00Z"))));
-                System.out.println("WEB_CONF");
                 List<Canvas__wiki_pages> pages = new ArrayList<>(wiki_pagesRepository.getAllPages(Date.from(Instant.parse("2023-03-01T00:00:00Z"))));
-                System.out.println("WIKI_PAGES");
                 int count = coursesRepository.countCourses(Date.from(Instant.parse("2023-03-01T00:00:00Z")));
                 return new DatabaseTables(students, courses, enrollments, scores, submissions, assignments, modules, conferences, pages, count);
         }
@@ -94,7 +88,8 @@ public class FetcherService {
         @Async
         public CompletableFuture<StudentsData> getStudentsData() {
                 List<Canvas__users> students = getDatabaseTables().getStudents();
-                List<Canvas__enrollments> enrollments = getDatabaseTables().getEnrollments();
+                List<Canvas__enrollments> enrollments = getDatabaseTables().getEnrollments().stream()
+                                .filter(std -> std.getType().startsWith("StudentEnrollment")).toList();
                 List<Canvas__scores> scores = getDatabaseTables().getScores();
                 List<Canvas__submissions> submissions = getDatabaseTables().getSubmissions();
 
@@ -114,6 +109,7 @@ public class FetcherService {
         @Async
         public CompletableFuture<CoursesData> getCoursesData() {
                 List<Canvas__courses> courses = getDatabaseTables().getCourses();
+                List<Canvas__users> students = getDatabaseTables().getStudents();
                 List<Canvas__enrollments> enrollments = getDatabaseTables().getEnrollments();
                 List<Canvas__scores> scores = getDatabaseTables().getScores();
                 List<Canvas__assignments> assignments = getDatabaseTables().getAssignments();
@@ -128,7 +124,7 @@ public class FetcherService {
                                 .collect(Collectors.groupingBy(Canvas__scores::getEnrollment_id));
 
                 int count = getDatabaseTables().getCoursesNumber();
-                CoursesData data = new CoursesData(courses, enrollmentsMap, scoresMap, scores, assignments, modules, conferences, pages, count);
+                CoursesData data = new CoursesData(courses, students, enrollmentsMap, scoresMap, scores, assignments, modules, conferences, pages, count);
                 return CompletableFuture.completedFuture(data);
         }
 

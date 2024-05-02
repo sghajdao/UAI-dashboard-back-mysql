@@ -19,6 +19,7 @@ import com.dashboard.entities.Canvas__context_modules;
 import com.dashboard.entities.Canvas__courses;
 import com.dashboard.entities.Canvas__enrollments;
 import com.dashboard.entities.Canvas__scores;
+import com.dashboard.entities.Canvas__users;
 import com.dashboard.entities.Canvas__web_conferences;
 import com.dashboard.entities.Canvas__wiki_pages;
 
@@ -55,7 +56,15 @@ public class CoursesService {
             int studentsWithGrade = 0;
             int inactiveStudents = 0;
             List<Double> studentsScorses = new ArrayList<>();
+            List<String> teachers = new ArrayList<>();
             for (Canvas__enrollments enrollment : courseEnrollments) {
+                for (Canvas__users user : coursesData.getStudents()) {
+                    if (user.getId().equals(enrollment.getUser_id())
+                            && enrollment.getType().startsWith("TeacherEnrollment")) {
+                        teachers.add(user.getName());
+                        break;
+                    }
+                }
                 if (enrollment.getLast_activity_at() != null
                         && System.currentTimeMillis() - enrollment.getLast_activity_at().getTime() >= 86400000 * 7)
                     inactiveStudents++;
@@ -75,8 +84,9 @@ public class CoursesService {
                     studentsScorses.add(current_scores / count);
                 }
             }
-            if (courseEnrollments.size() != 0)
-                response.setAverage(studentsWithGrade != 0? enrollmentAvg / studentsWithGrade : null);
+            response.setTeachers(teachers);
+            if (courseEnrollments.size() != 0 && studentsWithGrade != 0)
+                response.setAverage( enrollmentAvg / studentsWithGrade);
             response.setStudents_with_garde(studentsWithGrade);
             response.setAll_students(courseEnrollments.size());
             response.setInactive_students(inactiveStudents);

@@ -8,6 +8,7 @@ import com.dashboard.entities.Canvas__context_modules;
 import com.dashboard.entities.Canvas__courses;
 import com.dashboard.entities.Canvas__enrollments;
 import com.dashboard.entities.Canvas__scores;
+import com.dashboard.entities.Canvas__users;
 import com.dashboard.entities.Canvas__web_conferences;
 import com.dashboard.entities.Canvas__wiki_pages;
 
@@ -20,6 +21,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CoursesData {
     private List<Canvas__courses> courses;
+    private List<Canvas__users> students;
     private Map<Long, List<Canvas__enrollments>> enrollmentsMap;
     private Map<Long, List<Canvas__scores>> scoresMap;
     private List<Canvas__scores> scores;
