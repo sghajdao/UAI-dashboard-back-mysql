@@ -1,5 +1,6 @@
 server:
     port: 9292
+    address: 10.0.0.63
 spring:
     main:
         allow-bean-definition-overriding: true

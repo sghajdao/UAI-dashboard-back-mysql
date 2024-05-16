@@ -29,7 +29,7 @@ public class StudentsService {
 
     @Async
     public CompletableFuture<List<StudentsResponse>> getResponse() {
-        StudentsData studentsData = restTemplate.getForObject("http://localhost:9292/api/fetcher/students",
+        StudentsData studentsData = restTemplate.getForObject("http://10.0.0.63:9292/api/fetcher/students",
                 StudentsData.class);
 
         List<StudentsResponse> response = studentsData.getStudents().parallelStream()
