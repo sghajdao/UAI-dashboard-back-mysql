@@ -14,11 +14,12 @@ public class StudentsResponse {
     private Integer courses_enrolled;
     private Integer courses_with_grade;
     private Double average_grade;
-    private Long on_time_submissions;
-    private Long missing_submissions;
-    private Long late_submissions;
-    private Long execused_submissions;
+    // private Long on_time_submissions;
+    // private Long missing_submissions;
+    // private Long late_submissions;
+    // private Long execused_submissions;
+    private List<Submissions> submissions;
     private Integer since_last_attended;
     private Long since_last_activity;
-    private List<Double> courses_score;
+    private List<Scores> courses_score;
 }

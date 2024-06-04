@@ -14,8 +14,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.dashboard.dto.Scores;
 import com.dashboard.dto.StudentsData;
 import com.dashboard.dto.StudentsResponse;
+import com.dashboard.dto.Submissions;
 import com.dashboard.entities.Canvas__enrollments;
 import com.dashboard.entities.Canvas__scores;
 import com.dashboard.entities.Canvas__submissions;
@@ -36,7 +38,7 @@ public class StudentsService {
                 .map(student -> {
                     List<Canvas__enrollments> studentEnrollments = studentsData.getEnrollmentsMap().getOrDefault(student.getId(),
                             Collections.emptyList());
-                    List<Double> coursesScores = new ArrayList<>();
+                    List<Scores> coursesScores = new ArrayList<>();
                     double enrollmentAvg = 0;
                     long lastActivity = 0;
                     int attendedDays = 0;
@@ -54,7 +56,7 @@ public class StudentsService {
                             }
                         }
                         if (count != 0) {
-                            coursesScores.add(current_scores / count);
+                            coursesScores.add(new Scores(current_scores / count, enrollment.getStart_at()));
                             enrollmentAvg += current_scores / count;
                         }
 
@@ -73,7 +75,7 @@ public class StudentsService {
                     int averageLastAttendedDays = studentEnrollments.isEmpty() ? 0
                             : attendedDays / studentEnrollments.size();
                     double averageEnrollmentAvg = studentEnrollments.isEmpty() ||
-                            coursesScores.isEmpty() ? 0
+                            coursesScores.isEmpty() ? -1
                                     : enrollmentAvg / coursesScores.size();
 
                                     studentsData.getEnrollmentsMap().remove(student.getId());
@@ -104,31 +106,32 @@ public class StudentsService {
         response.forEach(student -> {
             List<Canvas__submissions> studentSubmissions = submissionsMap.getOrDefault(student.getUser_id(),
                     Collections.emptyList());
-            long onTime = 0;
-            long missing = 0;
-            long late = 0;
-            long excused = 0;
+            // long onTime = 0;
+            // long missing = 0;
+            // long late = 0;
+            // long excused = 0;
+            List<Submissions> submissions = new ArrayList<>();
 
             for (Canvas__submissions sub : studentSubmissions) {
                 if (sub.getLate_policy_status() != null) {
                     if (sub.getLate_policy_status().startsWith("missing")) {
-                        missing++;
+                        submissions.add(new Submissions("missing", sub.getCreated_at()));
                     } else if (sub.getLate_policy_status().startsWith("late")) {
-                        late++;
+                        submissions.add(new Submissions("late", sub.getCreated_at()));
                     }
                 }
 
                 if (sub.getExcused() != null && sub.getExcused()) {
-                    excused++;
+                    submissions.add(new Submissions("excused", sub.getCreated_at()));
                 } else {
-                    onTime++;
+                    submissions.add(new Submissions("ontime", sub.getCreated_at()));
                 }
             }
 
-            student.setOn_time_submissions(onTime);
-            student.setMissing_submissions(missing);
-            student.setLate_submissions(late);
-            student.setExecused_submissions(excused);
+            student.setSubmissions(submissions);
+            // student.setMissing_submissions(missing);
+            // student.setLate_submissions(late);
+            // student.setExecused_submissions(excused);
         });
         return response;
     }
