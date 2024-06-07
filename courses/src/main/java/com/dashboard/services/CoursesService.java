@@ -28,11 +28,13 @@ public class CoursesService {
     @Autowired
     private RestTemplate restTemplate;
 
-    private List<CoursesResponse> cachedResponse;
+    private List<CoursesResponse> cachedResponse1;
+    private List<CoursesResponse> cachedResponse2;
+    private List<CoursesResponse> cachedResponse3;
 
     @Async
-    public CompletableFuture<List<CoursesResponse>> getResponse() {
-        CoursesData coursesData = restTemplate.getForObject("http://10.0.0.63:9292/api/fetcher/courses/3",
+    public CompletableFuture<List<CoursesResponse>> getResponse(int i) {
+        CoursesData coursesData = restTemplate.getForObject("http://10.0.0.63:9292/api/fetcher/courses/3" + i,
                 CoursesData.class);
                 
         List<CoursesResponse> responses = new ArrayList<>();
@@ -147,14 +149,33 @@ public class CoursesService {
     }
 
     @Cacheable(value = "coursesResponseCache")
-    public List<CoursesResponse> getCachedResponse() {
-        return cachedResponse;
+    public List<CoursesResponse> getCachedResponse(int i) {
+        if (i == 1)
+            return cachedResponse1;
+        else if (i == 2)
+            return cachedResponse2;
+        else
+            return cachedResponse3;
     }
 
     @Scheduled(fixedRate = 24 * 60 * 60 * 1000)
-    public void refreshResponse() {
-        System.out.println("START");
-        cachedResponse = getResponse().join();
-        System.out.println("END");
+    public void refreshResponse1() {
+        System.out.println("START1");
+        cachedResponse1 = getResponse(1).join();
+        System.out.println("END1");
+    }
+
+    @Scheduled(fixedRate = 24 * 60 * 60 * 1000)
+    public void refreshResponse2() {
+        System.out.println("START2");
+        cachedResponse2 = getResponse(2).join();
+        System.out.println("END2");
+    }
+
+    @Scheduled(fixedRate = 24 * 60 * 60 * 1000)
+    public void refreshResponse3() {
+        System.out.println("START3");
+        cachedResponse3 = getResponse(3).join();
+        System.out.println("END3");
     }
 }
