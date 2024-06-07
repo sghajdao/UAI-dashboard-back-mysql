@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.concurrent.CompletableFuture;
@@ -20,11 +21,9 @@ public class StudentsController {
     @Autowired
     private StudentsService studentsService;
 
-    @GetMapping({ "/", "" })
-    private CompletableFuture<ResponseEntity<List<StudentsResponse>>> getStudentsResponse() {
-        List<StudentsResponse> cachedResponse = studentsService.getCachedResponse();
+    @GetMapping("/{i}")
+    private CompletableFuture<ResponseEntity<List<StudentsResponse>>> getStudentsResponse(@PathVariable int i) {
+        List<StudentsResponse> cachedResponse = studentsService.getCachedResponse(i);
         return CompletableFuture.completedFuture(new ResponseEntity<>(cachedResponse, HttpStatus.OK));
-        // return studentsService.getResponse().thenApply(
-        //         response -> new ResponseEntity<>(response, HttpStatus.OK));
     }
 }

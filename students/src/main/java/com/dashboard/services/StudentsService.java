@@ -14,10 +14,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.dashboard.dto.Scores;
 import com.dashboard.dto.StudentsData;
 import com.dashboard.dto.StudentsResponse;
-import com.dashboard.dto.Submissions;
 import com.dashboard.entities.Canvas__enrollments;
 import com.dashboard.entities.Canvas__scores;
 import com.dashboard.entities.Canvas__submissions;
@@ -27,18 +25,20 @@ public class StudentsService {
     @Autowired
     private RestTemplate restTemplate;
 
-    private List<StudentsResponse> cachedResponse;
+    private List<StudentsResponse> cachedResponse1;
+    private List<StudentsResponse> cachedResponse2;
+    private List<StudentsResponse> cachedResponse3;
 
     @Async
-    public CompletableFuture<List<StudentsResponse>> getResponse() {
-        StudentsData studentsData = restTemplate.getForObject("http://10.0.0.63:9292/api/fetcher/students",
+    public CompletableFuture<List<StudentsResponse>> getResponse(int i) {
+        StudentsData studentsData = restTemplate.getForObject("http://10.0.0.63:9292/api/fetcher/students/" + i,
                 StudentsData.class);
 
         List<StudentsResponse> response = studentsData.getStudents().parallelStream()
                 .map(student -> {
                     List<Canvas__enrollments> studentEnrollments = studentsData.getEnrollmentsMap().getOrDefault(student.getId(),
                             Collections.emptyList());
-                    List<Scores> coursesScores = new ArrayList<>();
+                    List<Double> coursesScores = new ArrayList<>();
                     double enrollmentAvg = 0;
                     long lastActivity = 0;
                     int attendedDays = 0;
@@ -56,7 +56,7 @@ public class StudentsService {
                             }
                         }
                         if (count != 0) {
-                            coursesScores.add(new Scores(current_scores / count, enrollment.getStart_at()));
+                            coursesScores.add(current_scores / count);
                             enrollmentAvg += current_scores / count;
                         }
 
@@ -106,46 +106,63 @@ public class StudentsService {
         response.forEach(student -> {
             List<Canvas__submissions> studentSubmissions = submissionsMap.getOrDefault(student.getUser_id(),
                     Collections.emptyList());
-            // long onTime = 0;
-            // long missing = 0;
-            // long late = 0;
-            // long excused = 0;
-            List<Submissions> submissions = new ArrayList<>();
+            long onTime = 0;
+            long missing = 0;
+            long late = 0;
+            long excused = 0;
 
             for (Canvas__submissions sub : studentSubmissions) {
                 if (sub.getLate_policy_status() != null) {
                     if (sub.getLate_policy_status().startsWith("missing")) {
-                        submissions.add(new Submissions("missing", sub.getCreated_at()));
+                        missing++;
                     } else if (sub.getLate_policy_status().startsWith("late")) {
-                        submissions.add(new Submissions("late", sub.getCreated_at()));
+                        late++;
                     }
                 }
 
                 if (sub.getExcused() != null && sub.getExcused()) {
-                    submissions.add(new Submissions("excused", sub.getCreated_at()));
+                    excused++;
                 } else {
-                    submissions.add(new Submissions("ontime", sub.getCreated_at()));
+                    onTime++;
                 }
             }
 
-            student.setSubmissions(submissions);
-            // student.setMissing_submissions(missing);
-            // student.setLate_submissions(late);
-            // student.setExecused_submissions(excused);
+            student.setOn_time_submissions(onTime);
+            student.setMissing_submissions(missing);
+            student.setLate_submissions(late);
+            student.setExecused_submissions(excused);
         });
         return response;
     }
 
     @Cacheable(value = "coursesResponseCache")
-    public List<StudentsResponse> getCachedResponse() {
-        System.out.println("REQUEST!!");
-        return cachedResponse;
+    public List<StudentsResponse> getCachedResponse(int i) {
+        if (i == 1)
+            return cachedResponse1;
+        else if (i == 2)
+            return cachedResponse2;
+        else
+            return cachedResponse3;
     }
 
     @Scheduled(fixedRate = 24 * 60 * 60 * 1000)
-    public void refreshResponse() {
-        System.out.println("START");
-        cachedResponse = getResponse().join();
-        System.out.println("END");
+    public void refreshResponse1() {
+        System.out.println("START1");
+        cachedResponse1 = getResponse(1).join();
+        System.out.println("END1");
+    }
+
+    @Scheduled(fixedRate = 24 * 60 * 60 * 1000)
+    public void refreshResponse2() {
+        System.out.println("START2");
+        cachedResponse2 = getResponse(2).join();
+        System.out.println("END2");
+    }
+
+    @Scheduled(fixedRate = 24 * 60 * 60 * 1000)
+    public void refreshResponse3() {
+        System.out.println("START3");
+        cachedResponse3 = getResponse(3).join();
+        System.out.println("END3");
     }
 }

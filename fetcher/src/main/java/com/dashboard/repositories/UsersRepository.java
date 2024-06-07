@@ -13,6 +13,6 @@ import com.dashboard.entities.Canvas__users;
 @Repository
 public interface UsersRepository extends JpaRepository<Canvas__users, Long> {
 
-    @Query("SELECT u FROM Canvas__users u WHERE u.created_at >= :startDate AND u.name <> 'Test student' AND u.name <> 'Étudiant test' AND u.name <> 'Test Student'")
+    @Query("SELECT u FROM Canvas__users u WHERE YEAR(u.created_at) = YEAR(:startDate) AND u.name <> 'Test student' AND u.name <> 'Étudiant test' AND u.name <> 'Test Student'")
     List<Canvas__users> getAllStudents(@Param("startDate") Date startDate);
 }

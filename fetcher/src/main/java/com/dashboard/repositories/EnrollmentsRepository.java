@@ -12,6 +12,6 @@ import com.dashboard.entities.Canvas__enrollments;
 
 @Repository
 public interface EnrollmentsRepository extends JpaRepository<Canvas__enrollments, Long> {
-    @Query("SELECT e FROM Canvas__enrollments e WHERE e.created_at >= :startDate")
+    @Query("SELECT a FROM Canvas__enrollments a WHERE YEAR(a.created_at) = YEAR(:startDate)")
     List<Canvas__enrollments> getAllEnrollments(@Param("startDate") Date startDate);
 }

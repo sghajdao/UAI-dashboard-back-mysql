@@ -16,6 +16,6 @@ public interface AssignmentsRepository extends JpaRepository<Canvas__assignments
     @Query("SELECT CASE WHEN EXISTS (SELECT 1 FROM Canvas__assignments e WHERE e.context_id = :id) THEN true ELSE false END")
     boolean countByContextId(@Param("id") Long id);
 
-    @Query("SELECT a FROM Canvas__assignments a WHERE a.created_at >= :startDate")
+    @Query("SELECT a FROM Canvas__assignments a WHERE YEAR(a.created_at) = YEAR(:startDate)")
     List<Canvas__assignments> getAllAssignments(@Param("startDate") Date startDate);
 }

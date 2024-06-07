@@ -13,9 +13,9 @@ import com.dashboard.entities.Canvas__wiki_pages;
 @Repository
 public interface Wiki_pagesRepository extends JpaRepository<Canvas__wiki_pages, Long> {
     // @Query("SELECT COUNT(*) FROM Canvas__wiki_pages e WHERE e.context_id = :id AND e.created_at >= :startDate")
-    @Query("SELECT CASE WHEN EXISTS (SELECT 1 FROM Canvas__wiki_pages e WHERE e.context_id = :id) THEN true ELSE false END")
-    boolean countByContextId(@Param("id") Long id);
+    // @Query("SELECT CASE WHEN EXISTS (SELECT 1 FROM Canvas__wiki_pages e WHERE e.context_id = :id) THEN true ELSE false END")
+    // boolean countByContextId(@Param("id") Long id);
 
-    @Query("SELECT s FROM Canvas__wiki_pages s WHERE s.created_at >= :startDate")
+    @Query("SELECT a FROM Canvas__wiki_pages a WHERE YEAR(a.created_at) = YEAR(:startDate)")
     List<Canvas__wiki_pages> getAllPages(@Param("startDate") Date startDate);
 }

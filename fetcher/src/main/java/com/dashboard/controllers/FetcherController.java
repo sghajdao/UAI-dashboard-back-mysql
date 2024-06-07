@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,16 +20,16 @@ public class FetcherController {
     @Autowired
     private FetcherService fetcherService;
 
-    @GetMapping("/students")
-    private CompletableFuture<ResponseEntity<StudentsData>> getStudentsData() {
-        return fetcherService.getStudentsData().thenApply(
+    @GetMapping("/students/{i}")
+    private CompletableFuture<ResponseEntity<StudentsData>> getStudentsData(@PathVariable int i) {
+        return fetcherService.getStudentsData(i).thenApply(
                 response -> new ResponseEntity<>(response, HttpStatus.OK));
         // return new ResponseEntity<>(fetcherService.getStudentsData(), HttpStatus.OK);
     }
 
-    @GetMapping("/courses")
-    private CompletableFuture<ResponseEntity<CoursesData>> getCoursesData() {
-        return fetcherService.getCoursesData().thenApply(
+    @GetMapping("/courses/{i}")
+    private CompletableFuture<ResponseEntity<CoursesData>> getCoursesData(@PathVariable int i) {
+        return fetcherService.getCoursesData(i).thenApply(
                 response -> new ResponseEntity<>(response, HttpStatus.OK));
         // return new ResponseEntity<>(fetcherService.getStudentsData(), HttpStatus.OK);
     }

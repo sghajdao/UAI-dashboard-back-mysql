@@ -12,12 +12,12 @@ import com.dashboard.entities.Canvas__courses;
 
 @Repository
 public interface CoursesRepository extends JpaRepository<Canvas__courses, Long> {
-    @Query("SELECT c FROM Canvas__courses c WHERE c.conclude_at IS NOT NULL AND c.is_public IS NOT NULL AND c.syllabus_body IS NOT NULL")
-    List<Canvas__courses> getAllCourses();
+    // @Query("SELECT c FROM Canvas__courses c WHERE c.conclude_at IS NOT NULL AND c.is_public IS NOT NULL AND c.syllabus_body IS NOT NULL")
+    // List<Canvas__courses> getAllCourses();
 
-    @Query("SELECT e FROM Canvas__courses e WHERE e.created_at >= :startDate AND e.syllabus_body IS NOT NULL")
+    @Query("SELECT a FROM Canvas__courses a WHERE YEAR(a.created_at) = YEAR(:startDate) AND a.syllabus_body IS NOT NULL")
     List<Canvas__courses> getAllCourses(@Param("startDate") Date startDate);
 
-    @Query("SELECT COUNT(c) FROM Canvas__courses c WHERE c.created_at >= :startDate")
+    @Query("SELECT COUNT(c) FROM Canvas__courses c WHERE YEAR(c.created_at) = YEAR(:startDate)")
     Integer countCourses(@Param("startDate") Date startDate);
 }

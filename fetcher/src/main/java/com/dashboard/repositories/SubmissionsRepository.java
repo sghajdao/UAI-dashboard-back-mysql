@@ -13,6 +13,6 @@ import com.dashboard.entities.Canvas__submissions;
 @Repository
 public interface SubmissionsRepository extends JpaRepository<Canvas__submissions, Long> {
 
-    @Query("SELECT s FROM Canvas__submissions s WHERE s.created_at >= :startDate")
+    @Query("SELECT a FROM Canvas__submissions a WHERE YEAR(a.created_at) = YEAR(:startDate)")
     List<Canvas__submissions> getAllSubmissions(@Param("startDate") Date startDate);
 }

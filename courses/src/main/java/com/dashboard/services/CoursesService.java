@@ -32,7 +32,7 @@ public class CoursesService {
 
     @Async
     public CompletableFuture<List<CoursesResponse>> getResponse() {
-        CoursesData coursesData = restTemplate.getForObject("http://10.0.0.63:9292/api/fetcher/courses",
+        CoursesData coursesData = restTemplate.getForObject("http://10.0.0.63:9292/api/fetcher/courses/3",
                 CoursesData.class);
                 
         List<CoursesResponse> responses = new ArrayList<>();
@@ -148,7 +148,6 @@ public class CoursesService {
 
     @Cacheable(value = "coursesResponseCache")
     public List<CoursesResponse> getCachedResponse() {
-        System.out.println("REQUEST!!");
         return cachedResponse;
     }
 

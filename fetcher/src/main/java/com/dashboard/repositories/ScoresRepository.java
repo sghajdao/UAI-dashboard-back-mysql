@@ -12,6 +12,6 @@ import com.dashboard.entities.Canvas__scores;
 
 @Repository
 public interface ScoresRepository extends JpaRepository<Canvas__scores, Long> {
-    @Query("SELECT s FROM Canvas__scores s WHERE s.current_score IS NOT NULL AND s.created_at >= :startDate")
+    @Query("SELECT s FROM Canvas__scores s WHERE s.current_score IS NOT NULL AND YEAR(s.created_at) = YEAR(:startDate)")
     List<Canvas__scores> findScoresWithNonNullCurrentScore(@Param("startDate") Date startDate);
 }
