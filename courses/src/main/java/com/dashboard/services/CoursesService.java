@@ -34,7 +34,7 @@ public class CoursesService {
 
     @Async
     public CompletableFuture<List<CoursesResponse>> getResponse(int i) {
-        CoursesData coursesData = restTemplate.getForObject("http://10.0.0.63:9292/api/fetcher/courses/3" + i,
+        CoursesData coursesData = restTemplate.getForObject("http://10.0.0.63:9292/api/fetcher/courses/" + i,
                 CoursesData.class);
                 
         List<CoursesResponse> responses = new ArrayList<>();
