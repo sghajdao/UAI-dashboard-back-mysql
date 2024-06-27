@@ -65,7 +65,8 @@ public class FetcherService {
 
     public List<Canvas__enrollments> getEnrolledStudents(Date date) {
         return enrollmentsRepository.getAllEnrollments(date).stream()
-                .filter(enrollment -> enrollment.getType().startsWith("StudentEnrollment") || enrollment.getType().startsWith("TeacherEnrollment"))
+                .filter(enrollment -> enrollment.getType().startsWith("StudentEnrollment")
+                        || enrollment.getType().startsWith("TeacherEnrollment"))
                 .collect(Collectors.toList());
     }
 
@@ -80,8 +81,9 @@ public class FetcherService {
         List<Canvas__web_conferences> conferences = webConferencesRepository.getAllConfernces(date);
         List<Canvas__wiki_pages> pages = wikiPagesRepository.getAllPages(date);
         int count = coursesRepository.countCourses(date);
-        
-        return new DatabaseTables(students, courses, enrollments, scores, submissions, assignments, modules, conferences, pages, count);
+
+        return new DatabaseTables(students, courses, enrollments, scores, submissions, assignments, modules,
+                conferences, pages, count);
     }
 
     @Async
@@ -126,11 +128,12 @@ public class FetcherService {
                 .collect(Collectors.groupingBy(Canvas__scores::getEnrollment_id));
 
         int count = dbTables.getCoursesNumber();
-        CoursesData data = new CoursesData(courses, students, enrollmentsMap, scoresMap, scores, assignments, modules, conferences, pages, count);
+        CoursesData data = new CoursesData(courses, students, enrollmentsMap, scoresMap, scores, assignments, modules,
+                conferences, pages, count);
         return CompletableFuture.completedFuture(data);
     }
 
-    @Cacheable(value = {"databaseTables1", "databaseTables2", "databaseTables3"})
+    @Cacheable(value = { "databaseTables1", "databaseTables2", "databaseTables3" })
     public DatabaseTables getDatabaseTables(int i) {
         return databaseTablesMap.get(i);
     }

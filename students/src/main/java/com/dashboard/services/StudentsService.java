@@ -31,12 +31,21 @@ public class StudentsService {
 
     @Async
     public CompletableFuture<List<StudentsResponse>> getResponse(int i) {
-        StudentsData studentsData = restTemplate.getForObject("http://10.0.0.63:9292/api/fetcher/students/" + i,
-                StudentsData.class);
+        StudentsData studentsData;
+        if (i == 1)
+            studentsData = restTemplate.getForObject("http://10.0.0.63:8080/api/fetcher/students",
+                    StudentsData.class);
+        else if (i == 2)
+            studentsData = restTemplate.getForObject("http://10.0.0.63:8181/api/fetcher/students",
+                    StudentsData.class);
+        else
+            studentsData = restTemplate.getForObject("http://10.0.0.63:8282/api/fetcher/students",
+                    StudentsData.class);
 
         List<StudentsResponse> response = studentsData.getStudents().parallelStream()
                 .map(student -> {
-                    List<Canvas__enrollments> studentEnrollments = studentsData.getEnrollmentsMap().getOrDefault(student.getId(),
+                    List<Canvas__enrollments> studentEnrollments = studentsData.getEnrollmentsMap().getOrDefault(
+                            student.getId(),
                             Collections.emptyList());
                     List<Double> coursesScores = new ArrayList<>();
                     double enrollmentAvg = 0;
@@ -45,7 +54,8 @@ public class StudentsService {
 
                     for (Canvas__enrollments enrollment : studentEnrollments) {
 
-                        List<Canvas__scores> studentScores = studentsData.getScoresMap().getOrDefault(enrollment.getId(),
+                        List<Canvas__scores> studentScores = studentsData.getScoresMap().getOrDefault(
+                                enrollment.getId(),
                                 Collections.emptyList());
                         double current_scores = 0;
                         int count = 0;
@@ -78,7 +88,7 @@ public class StudentsService {
                             coursesScores.isEmpty() ? -1
                                     : enrollmentAvg / coursesScores.size();
 
-                                    studentsData.getEnrollmentsMap().remove(student.getId());
+                    studentsData.getEnrollmentsMap().remove(student.getId());
 
                     if (studentEnrollments.size() == 0)
                         return null;

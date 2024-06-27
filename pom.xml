@@ -16,6 +16,9 @@
 		<module>students</module>
 		<module>courses</module>
 		<module>fetcher</module>
+		<module>students-fetcher</module>
+		<module>student-fetcher2</module>
+		<module>students-fetcher3</module>
 	</modules>
 	<name>dashboard</name>
 	<description>Demo project for Spring Boot</description>
