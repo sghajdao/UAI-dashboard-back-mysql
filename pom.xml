@@ -15,10 +15,12 @@
 	<modules>
 		<module>students</module>
 		<module>courses</module>
-		<module>fetcher</module>
 		<module>students-fetcher</module>
 		<module>student-fetcher2</module>
 		<module>students-fetcher3</module>
+		<module>courses-fetcher</module>
+		<module>courses-fetcher2</module>
+		<module>courses-fetcher3</module>
 	</modules>
 	<name>dashboard</name>
 	<description>Demo project for Spring Boot</description>
@@ -70,7 +72,7 @@
 							<artifactId>lombok</artifactId>
 						</exclude>
 					</excludes>
-					<jvmArguments>-Xms3572m -Xmx5596m</jvmArguments>
+					<jvmArguments>-Xms1024m -Xmx4096m</jvmArguments>
 				</configuration>
 			</plugin>
 		</plugins>

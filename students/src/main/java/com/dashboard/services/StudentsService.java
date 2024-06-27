@@ -33,13 +33,13 @@ public class StudentsService {
     public CompletableFuture<List<StudentsResponse>> getResponse(int i) {
         StudentsData studentsData;
         if (i == 1)
-            studentsData = restTemplate.getForObject("http://10.0.0.63:8080/api/fetcher/students",
-                    StudentsData.class);
-        else if (i == 2)
             studentsData = restTemplate.getForObject("http://10.0.0.63:8181/api/fetcher/students",
                     StudentsData.class);
-        else
+        else if (i == 2)
             studentsData = restTemplate.getForObject("http://10.0.0.63:8282/api/fetcher/students",
+                    StudentsData.class);
+        else
+            studentsData = restTemplate.getForObject("http://10.0.0.63:8383/api/fetcher/students",
                     StudentsData.class);
 
         List<StudentsResponse> response = studentsData.getStudents().parallelStream()

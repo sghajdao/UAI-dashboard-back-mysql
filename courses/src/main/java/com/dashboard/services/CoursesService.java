@@ -34,9 +34,17 @@ public class CoursesService {
 
     @Async
     public CompletableFuture<List<CoursesResponse>> getResponse(int i) {
-        CoursesData coursesData = restTemplate.getForObject("http://10.0.0.63:9292/api/fetcher/courses/" + i,
-                CoursesData.class);
-                
+        CoursesData coursesData;
+        if (i == 1)
+            coursesData = restTemplate.getForObject("http://10.0.0.63:8484/api/fetcher/courses/",
+                    CoursesData.class);
+        else if (i == 2)
+            coursesData = restTemplate.getForObject("http://10.0.0.63:8585/api/fetcher/courses/",
+                    CoursesData.class);
+        else
+            coursesData = restTemplate.getForObject("http://10.0.0.63:8686/api/fetcher/courses/",
+                    CoursesData.class);
+
         List<CoursesResponse> responses = new ArrayList<>();
 
         for (Canvas__courses course : coursesData.getCourses()) {
@@ -88,7 +96,7 @@ public class CoursesService {
             }
             response.setTeachers(teachers);
             if (courseEnrollments.size() != 0 && studentsWithGrade != 0)
-                response.setAverage( enrollmentAvg / studentsWithGrade);
+                response.setAverage(enrollmentAvg / studentsWithGrade);
             response.setStudents_with_garde(studentsWithGrade);
             response.setAll_students(courseEnrollments.size());
             response.setInactive_students(inactiveStudents);
@@ -121,25 +129,25 @@ public class CoursesService {
                 features.add("files");
             }
         }
-        for (Canvas__assignments assignments: coursesData.getAssignments()) {
+        for (Canvas__assignments assignments : coursesData.getAssignments()) {
             if (assignments.getContext_id().equals(course.getId())) {
                 features.add("assignments");
                 break;
             }
         }
-        for (Canvas__context_modules module: coursesData.getModules()) {
+        for (Canvas__context_modules module : coursesData.getModules()) {
             if (module.getContext_id().equals(course.getId())) {
                 features.add("modules");
                 break;
             }
         }
-        for (Canvas__web_conferences conference: coursesData.getConferences()) {
+        for (Canvas__web_conferences conference : coursesData.getConferences()) {
             if (conference.getContext_id().equals(course.getId())) {
                 features.add("conferences");
                 break;
             }
         }
-        for (Canvas__wiki_pages page: coursesData.getPages()) {
+        for (Canvas__wiki_pages page : coursesData.getPages()) {
             if (page.getContext_id().equals(course.getId())) {
                 features.add("pages");
                 break;

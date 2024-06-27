@@ -1,5 +1,5 @@
 server:
-    port: 8282
+    port: 8585
     address: 10.0.0.63
 spring:
     main:
