@@ -18,8 +18,7 @@ public class StudentsResponse {
     private Long missing_submissions;
     private Long late_submissions;
     private Long execused_submissions;
-    // private List<Submissions> submissions;
     private Integer since_last_attended;
-    private Long since_last_activity;
+    private Integer since_last_activity;
     private List<Double> courses_score;
 }

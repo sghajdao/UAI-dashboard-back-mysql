@@ -98,6 +98,7 @@ public class FetcherService {
         int count = dbTables.getCoursesNumber();
         CoursesData data = new CoursesData(courses, students, enrollmentsMap, scoresMap, scores, assignments, modules,
                 conferences, pages, count);
+        enrollments.clear();
         return CompletableFuture.completedFuture(data);
     }
 

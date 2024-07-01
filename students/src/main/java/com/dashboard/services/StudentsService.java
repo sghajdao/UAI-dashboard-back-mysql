@@ -49,7 +49,7 @@ public class StudentsService {
                             Collections.emptyList());
                     List<Double> coursesScores = new ArrayList<>();
                     double enrollmentAvg = 0;
-                    long lastActivity = 0;
+                    int lastActivity = 0;
                     int attendedDays = 0;
 
                     for (Canvas__enrollments enrollment : studentEnrollments) {
@@ -73,7 +73,7 @@ public class StudentsService {
                         if (enrollment.getLast_activity_at() != null) {
                             long activityDifference = System.currentTimeMillis()
                                     - enrollment.getLast_activity_at().getTime();
-                            lastActivity = Math.max(lastActivity, activityDifference);
+                            lastActivity = (int) Math.max(lastActivity, activityDifference);
                         }
                         if (enrollment.getLast_attended_at() != null) {
                             long attendedDifference = System.currentTimeMillis()
